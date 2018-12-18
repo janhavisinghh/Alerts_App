@@ -5,7 +5,7 @@
         android:id="@+id/card_view_notification"
         android:layout_width="369dp"
         android:layout_height="76dp"
-        android:layout_margin="10dp">
+        android:layout_margin="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
