@@ -60,8 +60,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         binding.closeButtonNotif.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(searchDataInDB(title)){
-                    removeData(title);
+                if(searchDataInDB(title, category)){
+                    removeData(title, category);
                 }
             }
         });
@@ -90,14 +90,14 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         }
 
     }
-    public boolean searchDataInDB(String title) {
+    public boolean searchDataInDB(String title, String category) {
         String[] projection = {
                 COLUMN_TITLE,
                 COLUMN_CATEGORY,
                 COLUMN_TIME_STAMP,
         };
-        String selection = COLUMN_TITLE + " =?";
-        String[] selectionArgs = {title};
+        String selection = COLUMN_TITLE + " =?" + " AND "+COLUMN_CATEGORY + " =?";
+        String[] selectionArgs = {title, category};
         String limit = "1";
         long id = 2;
 
@@ -110,10 +110,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         cursor.close();
         return data_present;
     }
-    private void removeData(final String title) {
+    private void removeData(final String title, final String category) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        context.getContentResolver().delete(CONTENT_URI, COLUMN_TITLE + "=?", new String[]{title});
+        context.getContentResolver().delete(CONTENT_URI, COLUMN_TITLE + "=? " + " AND " +COLUMN_CATEGORY +" =?", new String[]{title, category});
 
     }
     public Cursor getAllData(String category) {

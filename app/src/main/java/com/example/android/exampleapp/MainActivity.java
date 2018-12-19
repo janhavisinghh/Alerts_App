@@ -39,6 +39,13 @@ public class MainActivity extends AppCompatActivity {
     private Boolean onClickCard2 = false;
     private Boolean onClickCard3 = false;
 
+    private int cursorCount1 = 10;
+    private int cursorCount2 = 10;
+    private int cursorCount3 = 10;
+
+
+
+
     private SQLiteDatabase mDb;
 
 
@@ -50,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
         dataList = new ArrayList<>();
         data = new Data();
 
+        retrofitcall("Category 1");
+        retrofitcall("Category 2");
+        retrofitcall("Category 3");
 
         binding.recyclerView1.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerView2.setLayoutManager(new LinearLayoutManager(this));
@@ -69,9 +79,14 @@ public class MainActivity extends AppCompatActivity {
                 if (onClickCard1) {
                     onClickCard1 = false;
                     binding.recyclerView1.setVisibility(View.GONE);
+                    Cursor cursor = getAllData("Category 1");
+                    binding.noOfNotifications1.setText(cursor.getCount() + "");
                 } else {
                     onClickCard1 = true;
                     binding.recyclerView1.setVisibility(View.VISIBLE);
+                    adapter1.swapCursor(getAllData("Category 1"));
+                    Cursor cursor = getAllData("Category 1");
+                    binding.noOfNotifications1.setText(cursor.getCount() + "");
                 }
             }
         });
@@ -82,9 +97,14 @@ public class MainActivity extends AppCompatActivity {
                 if (onClickCard2) {
                     onClickCard2 = false;
                     binding.recyclerView2.setVisibility(View.GONE);
+                    Cursor cursor = getAllData("Category 2");
+                    binding.noOfNotifications2.setText(cursor.getCount() + "");
                 } else {
                     onClickCard2 = true;
                     binding.recyclerView2.setVisibility(View.VISIBLE);
+                    adapter2.swapCursor(getAllData("Category 2"));
+                    Cursor cursor = getAllData("Category 2");
+                    binding.noOfNotifications2.setText(cursor.getCount() + "");
                 }
             }
         });
@@ -95,9 +115,15 @@ public class MainActivity extends AppCompatActivity {
                 if (onClickCard3) {
                     onClickCard3 = false;
                     binding.recyclerView3.setVisibility(View.GONE);
+                    Cursor cursor = getAllData("Category 3");
+                    binding.noOfNotifications3.setText(cursor.getCount() + "");
                 } else {
                     onClickCard3 = true;
                     binding.recyclerView3.setVisibility(View.VISIBLE);
+                    adapter3.swapCursor(getAllData("Category 3"));
+                    Cursor cursor = getAllData("Category 3");
+                    binding.noOfNotifications3.setText(cursor.getCount() + "");
+
                 }
             }
         });
@@ -107,6 +133,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 removeAll("Category 1");
                 adapter1.swapCursor(getAllData("Category 1"));
+                Cursor cursor = getAllData("Category 1");
+                binding.noOfNotifications1.setText(cursor.getCount() + "");
+
 
             }
         });
@@ -115,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 removeAll("Category 2");
                 adapter2.swapCursor(getAllData("Category 2"));
+                Cursor cursor = getAllData("Category 2");
+                binding.noOfNotifications2.setText(cursor.getCount() + "");
+
             }
         });
         binding.cancelButton3.setOnClickListener(new View.OnClickListener() {
@@ -122,6 +154,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 removeAll("Category 3");
                 adapter3.swapCursor(getAllData("Category 3"));
+                Cursor cursor = getAllData("Category 3");
+                binding.noOfNotifications3.setText(cursor.getCount() + "");
+
 
             }
         });
@@ -200,11 +235,9 @@ public class MainActivity extends AppCompatActivity {
         Call<Data> call;
         if(category.equals("Category 1")){
             call = service.getAllDataOne();
-
         }
         else if(category.equals("Category 2")){
             call = service.getAllDataTwo();
-
         }
         else {
             call = service.getAllDataThree();
@@ -224,22 +257,24 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Cursor cursor = getAllData(category);
                 if(category.equals("Category 1")){
-                    binding.noOfNotifications1.setText(dataList.size() + "");
                     adapter1 = new CategoryAdapter(getApplicationContext(), cursor);
                     binding.recyclerView1.setAdapter(adapter1);
                     adapter1.swapCursor(getAllData(category));
+                    binding.noOfNotifications1.setText(cursor.getCount() + "");
                 }
                 else if(category.equals("Category 2")){
-                    binding.noOfNotifications2.setText(dataList.size() + "");
                     adapter2 = new CategoryAdapter(getApplicationContext(), cursor);
                     binding.recyclerView2.setAdapter(adapter2);
                     adapter2.swapCursor(getAllData(category));
+                    cursorCount2 = cursor.getCount();
+                    binding.noOfNotifications2.setText(cursor.getCount() + "");
                 }
                 else{
-                    binding.noOfNotifications3.setText(dataList.size() + "");
                     adapter3 = new CategoryAdapter(getApplicationContext(), cursor);
                     binding.recyclerView3.setAdapter(adapter3);
                     adapter3.swapCursor(getAllData(category));
+                    cursorCount3 = cursor.getCount();
+                    binding.noOfNotifications3.setText(cursor.getCount() + "");
                 }
             }
 
