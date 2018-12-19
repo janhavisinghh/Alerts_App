@@ -25,6 +25,7 @@ import static com.example.android.exampleapp.DataContract.DataEntry.COLUMN_TIME_
 import static com.example.android.exampleapp.DataContract.DataEntry.COLUMN_TITLE;
 import static com.example.android.exampleapp.DataContract.DataEntry.CONTENT_URI;
 import static com.example.android.exampleapp.DataContract.DataEntry._ID;
+import static com.example.android.exampleapp.DataContract.DataEntry.buildTodoUriWithId;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private Boolean onClickCard1 = false;
     private Boolean onClickCard2 = false;
     private Boolean onClickCard3 = false;
+
     private SQLiteDatabase mDb;
 
 
@@ -60,88 +62,6 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerView1.setNestedScrollingEnabled(false);
         binding.recyclerView2.setNestedScrollingEnabled(false);
         binding.recyclerView3.setNestedScrollingEnabled(false);
-
-
-        GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
-
-        Call<Data> callOne = service.getAllDataOne();
-
-        callOne.enqueue(new Callback<Data>() {
-            @Override
-            public void onResponse(Call<Data> call, Response<Data> response) {
-                data = response.body();
-                dataList = data.getData();
-                DBHelper dbHelper = new DBHelper(getApplicationContext());
-                mDb = dbHelper.getWritableDatabase();
-                binding.noOfNotifications1.setText(dataList.size() + "");
-                for (int i = 0; i < dataList.size(); i++) {
-                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
-                }
-                Cursor cursor = getAllData("Category 1");
-                adapter1 = new CategoryAdapter(getApplicationContext(), cursor);
-                binding.recyclerView1.setAdapter(adapter3);
-                adapter1.swapCursor(getAllData("Category 1"));
-            }
-
-            @Override
-            public void onFailure(Call<Data> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
-                t.getCause();
-            }
-        });
-
-        Call<Data> callTwo = service.getAllDataTwo();
-
-        callTwo.enqueue(new Callback<Data>() {
-            @Override
-            public void onResponse(Call<Data> call, Response<Data> response) {
-                data = response.body();
-                DBHelper dbHelper = new DBHelper(getApplicationContext());
-                mDb = dbHelper.getWritableDatabase();
-                dataList = data.getData();
-                binding.noOfNotifications2.setText(dataList.size() + "");
-                for (int i = 0; i < dataList.size(); i++) {
-                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
-                }
-                Cursor cursor = getAllData("Category 2");
-                adapter2 = new CategoryAdapter(getApplicationContext(), cursor);
-                binding.recyclerView2.setAdapter(adapter2);
-                adapter2.swapCursor(getAllData("Category 2"));
-
-            }
-
-            @Override
-            public void onFailure(Call<Data> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
-                t.getCause();
-            }
-        });
-        Call<Data> callThree = service.getAllDataThree();
-
-
-        callThree.enqueue(new Callback<Data>() {
-            @Override
-            public void onResponse(Call<Data> call, Response<Data> response) {
-                DBHelper dbHelper = new DBHelper(getApplicationContext());
-                mDb = dbHelper.getWritableDatabase();
-                data = response.body();
-                dataList = data.getData();
-                binding.noOfNotifications3.setText(dataList.size() + "");
-                for (int i = 0; i < dataList.size(); i++) {
-                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
-                }
-                Cursor cursor = getAllData("Category 3");
-                adapter3 = new CategoryAdapter(getApplicationContext(), cursor);
-                binding.recyclerView3.setAdapter(adapter3);
-                adapter3.swapCursor(getAllData("Category 3"));
-            }
-
-            @Override
-            public void onFailure(Call<Data> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
-                t.getCause();
-            }
-        });
 
         binding.cardView1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,6 +102,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        binding.cancelButton1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeAll("Category 1");
+                adapter1.swapCursor(getAllData("Category 1"));
+
+            }
+        });
+        binding.cancelButton2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeAll("Category 2");
+                adapter2.swapCursor(getAllData("Category 2"));
+            }
+        });
+        binding.cancelButton3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeAll("Category 3");
+                adapter3.swapCursor(getAllData("Category 3"));
+
+            }
+        });
+
     }
 
     @Override
@@ -196,6 +140,12 @@ public class MainActivity extends AppCompatActivity {
         switch (itemId) {
             case R.id.refresh_button:
                 Toast.makeText(getApplicationContext(), "Loading...", Toast.LENGTH_SHORT).show();
+                removeAll("Category 1");
+                removeAll("Category 2");
+                removeAll("Category 3");
+                retrofitcall("Category 1");
+                retrofitcall("Category 2");
+                retrofitcall("Category 3");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -218,6 +168,87 @@ public class MainActivity extends AppCompatActivity {
                 selection,
                 selectionArgs,
                 _ID);
+    }
+    public boolean searchDataInDB(String category) {
+        String[] projection = {
+                COLUMN_TITLE,
+                COLUMN_CATEGORY,
+                COLUMN_TIME_STAMP,
+        };
+        String selection = COLUMN_CATEGORY + " =?";
+        String[] selectionArgs = {category};
+        String limit = "1";
+        long id = 2;
+
+        Cursor cursor = getContentResolver().query(buildTodoUriWithId(id),
+                projection,
+                selection,
+                selectionArgs,
+                limit);
+        boolean data_present = (cursor.getCount() > 0);
+        cursor.close();
+        return data_present;
+    }
+    public void removeAll(String category) {
+        DBHelper dbHelper = new DBHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase(); // helper is object extends SQLiteOpenHelper
+        getContentResolver().delete(CONTENT_URI, COLUMN_CATEGORY +"=?", new String[]{category});
+    }
+
+    void retrofitcall(final String category){
+        GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
+        Call<Data> call;
+        if(category.equals("Category 1")){
+            call = service.getAllDataOne();
+
+        }
+        else if(category.equals("Category 2")){
+            call = service.getAllDataTwo();
+
+        }
+        else {
+            call = service.getAllDataThree();
+        }
+
+        call.enqueue(new Callback<Data>() {
+            @Override
+            public void onResponse(Call<Data> call, Response<Data> response) {
+                DBHelper dbHelper = new DBHelper(getApplicationContext());
+                mDb = dbHelper.getWritableDatabase();
+                data = response.body();
+                dataList = data.getData();
+                if(!searchDataInDB(category)) {
+                    for (int i = 0; i < dataList.size(); i++) {
+                        addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
+                    }
+                }
+                Cursor cursor = getAllData(category);
+                if(category.equals("Category 1")){
+                    binding.noOfNotifications1.setText(dataList.size() + "");
+                    adapter1 = new CategoryAdapter(getApplicationContext(), cursor);
+                    binding.recyclerView1.setAdapter(adapter1);
+                    adapter1.swapCursor(getAllData(category));
+                }
+                else if(category.equals("Category 2")){
+                    binding.noOfNotifications2.setText(dataList.size() + "");
+                    adapter2 = new CategoryAdapter(getApplicationContext(), cursor);
+                    binding.recyclerView2.setAdapter(adapter2);
+                    adapter2.swapCursor(getAllData(category));
+                }
+                else{
+                    binding.noOfNotifications3.setText(dataList.size() + "");
+                    adapter3 = new CategoryAdapter(getApplicationContext(), cursor);
+                    binding.recyclerView3.setAdapter(adapter3);
+                    adapter3.swapCursor(getAllData(category));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Data> call, Throwable t) {
+                Toast.makeText(getApplicationContext(), "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
+                t.getCause();
+            }
+        });
     }
 
 }
