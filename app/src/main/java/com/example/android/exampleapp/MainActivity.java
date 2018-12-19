@@ -44,11 +44,12 @@ public class MainActivity extends AppCompatActivity {
     private int cursorCount3 = 10;
 
 
-
-
     private SQLiteDatabase mDb;
 
-
+    /**
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,15 +156,43 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        binding.refreshButton1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                retrofitcall("Category 1");
+            }
+        });
+        binding.refreshButton2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                retrofitcall("Category 2");
+            }
+        });
+        binding.refreshButton3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                retrofitcall("Category 3");
+            }
+        });
 
     }
 
+    /**
+     *
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
 
+    /**
+     *
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
@@ -182,6 +211,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     * @param title
+     * @param category
+     * @param time_stamp
+     */
     private void addNewData(String title, String category, String time_stamp) {
         final ContentValues cv = new ContentValues();
         cv.put(COLUMN_TITLE, title);
@@ -190,6 +225,11 @@ public class MainActivity extends AppCompatActivity {
         getContentResolver().insert(CONTENT_URI, cv);
     }
 
+    /**
+     *
+     * @param category
+     * @return
+     */
     public Cursor getAllData(String category) {
         String selection = COLUMN_CATEGORY + " =?";
         String[] selectionArgs = {category};
@@ -199,6 +239,12 @@ public class MainActivity extends AppCompatActivity {
                 selectionArgs,
                 _ID);
     }
+
+    /**
+     *
+     * @param category
+     * @return
+     */
     public boolean searchDataInDB(String category) {
         String[] projection = {
                 COLUMN_TITLE,
@@ -219,52 +265,62 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
         return data_present;
     }
+
+    /**
+     *
+     * @param category
+     */
     public void removeAll(String category) {
         DBHelper dbHelper = new DBHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase(); // helper is object extends SQLiteOpenHelper
-        getContentResolver().delete(CONTENT_URI, COLUMN_CATEGORY +"=?", new String[]{category});
+        getContentResolver().delete(CONTENT_URI, COLUMN_CATEGORY + "=?", new String[]{category});
     }
 
-    public void retrofitcall(final String category){
+    /**
+     *
+     * @param category
+     */
+    public void retrofitcall(final String category) {
         GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
         Call<Data> call;
-        if(category.equals("Category 1")){
+        if (category.equals("Category 1")) {
             call = service.getAllDataOne();
-        }
-        else if(category.equals("Category 2")){
+        } else if (category.equals("Category 2")) {
             call = service.getAllDataTwo();
-        }
-        else {
+        } else {
             call = service.getAllDataThree();
         }
 
         call.enqueue(new Callback<Data>() {
+            /**
+             *
+             * @param call
+             * @param response
+             */
             @Override
             public void onResponse(Call<Data> call, Response<Data> response) {
                 DBHelper dbHelper = new DBHelper(getApplicationContext());
                 mDb = dbHelper.getWritableDatabase();
                 data = response.body();
                 dataList = data.getData();
-                if(!searchDataInDB(category)) {
+                if (!searchDataInDB(category)) {
                     for (int i = 0; i < dataList.size(); i++) {
                         addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
                     }
                 }
                 Cursor cursor = getAllData(category);
-                if(category.equals("Category 1")){
+                if (category.equals("Category 1")) {
                     adapter1 = new CategoryAdapter(getApplicationContext(), cursor);
                     binding.recyclerView1.setAdapter(adapter1);
                     adapter1.swapCursor(getAllData(category));
                     binding.noOfNotifications1.setText(cursor.getCount() + "");
-                }
-                else if(category.equals("Category 2")){
+                } else if (category.equals("Category 2")) {
                     adapter2 = new CategoryAdapter(getApplicationContext(), cursor);
                     binding.recyclerView2.setAdapter(adapter2);
                     adapter2.swapCursor(getAllData(category));
                     cursorCount2 = cursor.getCount();
                     binding.noOfNotifications2.setText(cursor.getCount() + "");
-                }
-                else{
+                } else {
                     adapter3 = new CategoryAdapter(getApplicationContext(), cursor);
                     binding.recyclerView3.setAdapter(adapter3);
                     adapter3.swapCursor(getAllData(category));
@@ -273,6 +329,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            /**
+             *
+             * @param call
+             * @param t
+             */
             @Override
             public void onFailure(Call<Data> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();

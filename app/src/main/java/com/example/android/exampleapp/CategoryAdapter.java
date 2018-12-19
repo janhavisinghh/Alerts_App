@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.android.exampleapp.databinding.NotificationItemBinding;
 
@@ -17,7 +18,6 @@ import static com.example.android.exampleapp.DataContract.DataEntry.COLUMN_CATEG
 import static com.example.android.exampleapp.DataContract.DataEntry.COLUMN_TIME_STAMP;
 import static com.example.android.exampleapp.DataContract.DataEntry.COLUMN_TITLE;
 import static com.example.android.exampleapp.DataContract.DataEntry.CONTENT_URI;
-import static com.example.android.exampleapp.DataContract.DataEntry.TABLE_NAME;
 import static com.example.android.exampleapp.DataContract.DataEntry._ID;
 import static com.example.android.exampleapp.DataContract.DataEntry.buildTodoUriWithId;
 
@@ -47,7 +47,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
      * @param position
      */
     @Override
-    public void onBindViewHolder(@NonNull CategoryAdapter.CategoryOneViewHolder holder,final int position) {
+    public void onBindViewHolder(@NonNull CategoryAdapter.CategoryOneViewHolder holder, final int position) {
         cursor.moveToPosition(position);
 
         final String title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE));
@@ -60,13 +60,18 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         binding.closeButtonNotif.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(searchDataInDB(title, category)){
+                if (searchDataInDB(title, category)) {
                     removeData(title, category);
+                    Toast.makeText(context, title +" Deleted", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
+    /**
+     *
+     * @param newCursor
+     */
     public void swapCursor(Cursor newCursor) {
         if (cursor != null) cursor.close();
         cursor = newCursor;
@@ -80,23 +85,19 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         return cursor.getCount();
     }
 
-
-    public class CategoryOneViewHolder extends RecyclerView.ViewHolder {
-        /**
-         * @param itemView
-         */
-        public CategoryOneViewHolder(View itemView) {
-            super(itemView);
-        }
-
-    }
+    /**
+     *
+     * @param title
+     * @param category
+     * @return
+     */
     public boolean searchDataInDB(String title, String category) {
         String[] projection = {
                 COLUMN_TITLE,
                 COLUMN_CATEGORY,
                 COLUMN_TIME_STAMP,
         };
-        String selection = COLUMN_TITLE + " =?" + " AND "+COLUMN_CATEGORY + " =?";
+        String selection = COLUMN_TITLE + " =?" + " AND " + COLUMN_CATEGORY + " =?";
         String[] selectionArgs = {title, category};
         String limit = "1";
         long id = 2;
@@ -110,12 +111,24 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         cursor.close();
         return data_present;
     }
+
+    /**
+     *
+     * @param title
+     * @param category
+     */
     private void removeData(final String title, final String category) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        context.getContentResolver().delete(CONTENT_URI, COLUMN_TITLE + "=? " + " AND " +COLUMN_CATEGORY +" =?", new String[]{title, category});
+        context.getContentResolver().delete(CONTENT_URI, COLUMN_TITLE + "=? " + " AND " + COLUMN_CATEGORY + " =?", new String[]{title, category});
 
     }
+
+    /**
+     *
+     * @param category
+     * @return
+     */
     public Cursor getAllData(String category) {
         String selection = COLUMN_CATEGORY + " =?";
         String[] selectionArgs = {category};
@@ -124,5 +137,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 selection,
                 selectionArgs,
                 _ID);
+    }
+
+    public class CategoryOneViewHolder extends RecyclerView.ViewHolder {
+        /**
+         * @param itemView
+         */
+        public CategoryOneViewHolder(View itemView) {
+            super(itemView);
+        }
+
     }
 }

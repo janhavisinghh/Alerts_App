@@ -12,7 +12,7 @@ public class DataContract {
     public static final class DataEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI =
-        BASE_CONTENT_URI.buildUpon().appendPath(PATH_DATA).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_DATA).build();
         public static final String TABLE_NAME = "DataObjs";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_CATEGORY = "category";
