@@ -84,9 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     onClickCard1 = true;
                     binding.recyclerView1.setVisibility(View.VISIBLE);
-                    adapter1.swapCursor(getAllData("Category 1"));
-                    Cursor cursor = getAllData("Category 1");
-                    binding.noOfNotifications1.setText(cursor.getCount() + "");
+                    retrofitcall("Category 1");
                 }
             }
         });
@@ -102,9 +100,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     onClickCard2 = true;
                     binding.recyclerView2.setVisibility(View.VISIBLE);
-                    adapter2.swapCursor(getAllData("Category 2"));
-                    Cursor cursor = getAllData("Category 2");
-                    binding.noOfNotifications2.setText(cursor.getCount() + "");
+                    retrofitcall("Category 2");
+
                 }
             }
         });
@@ -120,9 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     onClickCard3 = true;
                     binding.recyclerView3.setVisibility(View.VISIBLE);
-                    adapter3.swapCursor(getAllData("Category 3"));
-                    Cursor cursor = getAllData("Category 3");
-                    binding.noOfNotifications3.setText(cursor.getCount() + "");
+                    retrofitcall("Category 3");
 
                 }
             }
@@ -132,8 +127,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 removeAll("Category 1");
-                adapter1.swapCursor(getAllData("Category 1"));
                 Cursor cursor = getAllData("Category 1");
+                adapter1 = new CategoryAdapter(getApplicationContext(), cursor);
                 binding.noOfNotifications1.setText(cursor.getCount() + "");
 
 
@@ -143,8 +138,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 removeAll("Category 2");
-                adapter2.swapCursor(getAllData("Category 2"));
                 Cursor cursor = getAllData("Category 2");
+                adapter2 = new CategoryAdapter(getApplicationContext(), cursor);
                 binding.noOfNotifications2.setText(cursor.getCount() + "");
 
             }
@@ -153,8 +148,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 removeAll("Category 3");
-                adapter3.swapCursor(getAllData("Category 3"));
                 Cursor cursor = getAllData("Category 3");
+                adapter3.swapCursor(getAllData("Category 3"));
                 binding.noOfNotifications3.setText(cursor.getCount() + "");
 
 
@@ -230,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
         getContentResolver().delete(CONTENT_URI, COLUMN_CATEGORY +"=?", new String[]{category});
     }
 
-    void retrofitcall(final String category){
+    public void retrofitcall(final String category){
         GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
         Call<Data> call;
         if(category.equals("Category 1")){
