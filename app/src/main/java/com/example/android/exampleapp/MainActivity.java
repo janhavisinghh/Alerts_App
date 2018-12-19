@@ -71,12 +71,16 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<Data> call, Response<Data> response) {
                 data = response.body();
                 dataList = data.getData();
+                DBHelper dbHelper = new DBHelper(getApplicationContext());
+                mDb = dbHelper.getWritableDatabase();
                 binding.noOfNotifications1.setText(dataList.size() + "");
-//                for (int i = 0; i < dataList.size(); i++) {
-//                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
-//                }
-//                binding.recyclerView1.setAdapter(adapter1);
-//                adapter1.setData(dataList);
+                for (int i = 0; i < dataList.size(); i++) {
+                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
+                }
+                Cursor cursor = getAllData("Category 1");
+                adapter1 = new CategoryAdapter(getApplicationContext(), cursor);
+                binding.recyclerView1.setAdapter(adapter3);
+                adapter1.swapCursor(getAllData("Category 1"));
             }
 
             @Override
@@ -92,13 +96,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Data> call, Response<Data> response) {
                 data = response.body();
+                DBHelper dbHelper = new DBHelper(getApplicationContext());
+                mDb = dbHelper.getWritableDatabase();
                 dataList = data.getData();
                 binding.noOfNotifications2.setText(dataList.size() + "");
-//                for (int i = 0; i < dataList.size(); i++) {
-//                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
-//                }
-//                binding.recyclerView2.setAdapter(adapter2);
-//                adapter2.setData(dataList);
+                for (int i = 0; i < dataList.size(); i++) {
+                    addNewData(dataList.get(i).getTitle(), dataList.get(i).getCategory(), dataList.get(i).getTimeStamp());
+                }
+                Cursor cursor = getAllData("Category 2");
+                adapter2 = new CategoryAdapter(getApplicationContext(), cursor);
+                binding.recyclerView2.setAdapter(adapter2);
+                adapter2.swapCursor(getAllData("Category 2"));
+
             }
 
             @Override
@@ -210,4 +219,5 @@ public class MainActivity extends AppCompatActivity {
                 selectionArgs,
                 _ID);
     }
+
 }
